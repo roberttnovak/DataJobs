@@ -1,0 +1,100 @@
+---
+title: "Informe"
+author: "Robert Novak"
+date: "28/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importación de librerías 
+
+```{r}
+library(tidyverse)
+#library(kableExtra)
+library(pander) #Para mostrar los vectores más estéticamente
+library(DT)
+library(readr)
+```
+
+# Importación del dataset
+
+```{r, cache=T}
+raw_data <- read_csv("Data/Raw/uncleaned_data.csv")
+```
+
+```{r}
+# raw_data %>% DT::datatable(
+#   extensions = 'FixedColumns',
+#   options = list(
+#     dom = 't',
+#     scrollX = TRUE,
+#     scrollCollapse = TRUE)
+#   )
+```
+
+# Exploración del dominio de las variables
+
+## Nombre de todas las variables
+
+```{r}
+cols_raw_data <- names(raw_data)
+cols_raw_data
+```
+
+## Selección de las variables de interés para el estudio del dominio
+
+
+```{r}
+cols_no_interest <- c("index","Job Description") #Eliminamos Job Description de momento por tener demasiada información
+cols_raw_data_filtered <- cols_raw_data[-which(cols_raw_data %in% cols_no_interest)]
+cols_raw_data_filtered
+```
+
+## Visualización en forma de lista del dominio de cada variable
+
+# Limpieza de datos
+
+## Puntos a tener en cuenta para la limpieza de datos 
+
+A raíz del estudio hecho en el apartado anterior, hay que tener en cuenta los siguientes puntos para la limpieza de datos:
+
+1. Para la variable `Job Title` es interesante extraer la información del nivel exigido: Junior, Senior, II, etc. 
+
+1. balblabla
+
+
+
+```{r}
+cols_raw_data_filtered %>% 
+  map(function(x) unique(raw_data[[x]])) %>% 
+  setNames(cols_raw_data_filtered)
+```
+
+
+```{r}
+salary_estimate <- raw_data %>% 
+  select(`Salary Estimate`) %>% 
+  distinct() 
+
+salary_estimate %>% datatable()
+```
+
+En primer lugar, nos aseguramos de forma automatizada que todos los datos de la columna `Salary Estimate` están en miles: 
+
+```{r}
+all_k <- salary_estimate %>% 
+  map(function(x) grepl(".*K.*K",x)) %>% 
+  as_vector() %>% 
+  all()
+
+if(all_k){
+  cat("Todas las observaciones están en miles, no hay que tener ningún cuidado especial")
+}else{
+  cat("¡Cuidado! Existen algunas observaciones que no están en miles, hay que tratar esas observaciones")
+}
+```
+
+
