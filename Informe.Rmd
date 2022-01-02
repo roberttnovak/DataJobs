@@ -5,6 +5,8 @@ date: "28/12/2021"
 output: html_document
 ---
 
+<!-- Para después de ejecutar el knitr ponerlo en la consola para cargar las variables rmarkdown::render("Informe.Rmd") -->
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -110,7 +112,7 @@ out_jobs <- raw_data %>%
   datatable()
 ```
 
-Consideramos que los trabajos que se quedan fuera son demasiado específicos para el análisis que queremos hacer posteriormente. Además, el numero de observaciones que perderíamos si no consideraramos el estudio posterior para ninguna de estas profesiones es de `r length(out_jobs_index)` lo que consideramos una cifra asumible. 
+Consideramos que los trabajos que se quedan fuera son demasiado específicos para el análisis que queremos hacer posteriormente. Además, el número de observaciones que perderíamos si no consideraramos el estudio posterior para ninguna de estas profesiones es de `r length(out_jobs_index)` lo que consideramos una cifra asumible. 
 
 ```{r}
 clean_data <- clean_data[!is.na(clean_data$`Job Title`),]
@@ -166,7 +168,7 @@ clean_data <- clean_data %>%
 ## Tratamiento de la variable `Headquarters` y `Location`
 
 ```{r}
-clea_data <-  clean_data %>% 
+clean_data <-  clean_data %>% 
   mutate(`Same Location Headquarter`= Location==Headquarters)
 ```
 
@@ -292,12 +294,40 @@ clean_data <- clean_data %>%
              Revenue=="$1 to $2 billion (USD)"           ~ "1000000000-2000000000",
              Revenue=="$2 to $5 billion (USD)"           ~ "2000000000-5000000000",
              Revenue=="$5 to $10 billion (USD)"          ~ "5000000000-10000000000",
-             Revenue=="$10+ billion (USD)"               ~ "10000000000-",
+             Revenue=="$10+ billion (USD)"               ~ "10000000000-Inf",
          )
          
 ) %>% 
-  separate(Revenue, sep="-", into=c("Revenue Inf","Revenue Sup")) %>% View
+  separate(Revenue, sep="-", into=c("Revenue Inf","Revenue Sup")) %>% 
+  mutate(
+    `Revenue Inf`=as.numeric(`Revenue Inf`),
+    `Revenue Sup`=as.numeric(`Revenue Sup`)
+  )
   
 ```
 
 
+Más columnas a tener en cuenta para NAs
+
+-Salary Med 
+-Size
+
+Subselección de las variabels de interés (No): 
+-Rating 
+-index
+-competitors
+-founded
+
+Pasos previos: 
+
+- Estudiar Normalidad Salary --> Robert 
+- Outlier --> Geovanny
+
+Preguntas: 
+
+1- Relación ente el trabajo y el salario . chisquared --> Robert 
+1- Relación entre sede central=localización y salary --> Geovanny 
+1- Comparación entre type of ownerships y salarios --> Robert  
+1- Relación entre industry y salario --> Geovanny
+1- Revenue y salary --> Geovanny
+1- Size (máx) y salary --> Robert 

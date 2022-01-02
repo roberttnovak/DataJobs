@@ -417,28 +417,20 @@ summary {
 </div>
 
 
+<!-- Para después de ejecutar el knitr ponerlo en la consola para cargar las variables rmarkdown::render("Informe.Rmd") -->
 <div id="importación-de-librerías" class="section level1">
 <h1>Importación de librerías</h1>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
-<pre><code>## v ggplot2 3.3.2     v purrr   0.3.4
-## v tibble  3.0.4     v dplyr   1.0.4
-## v tidyr   1.1.2     v stringr 1.4.0
-## v readr   1.4.0     v forcats 0.5.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>#library(kableExtra)
-library(pander) #Para mostrar los vectores más estéticamente</code></pre>
-<pre><code>## Warning: package &#39;pander&#39; was built under R version 4.0.5</code></pre>
-<pre class="r"><code>library(DT)
+<pre class="r"><code>library(tidyverse)
+#library(kableExtra)
+library(pander) #Para mostrar los vectores más estéticamente
+library(DT)
 library(readr)</code></pre>
 </div>
 <div id="importación-del-dataset" class="section level1">
 <h1>Importación del dataset</h1>
 <pre class="r"><code>raw_data &lt;- read_csv(&quot;Data/Raw/uncleaned_data.csv&quot;)</code></pre>
 <pre><code>## 
-## -- Column specification --------------------------------------------------------
+## -- Column specification -----------------------------------------------------
 ## cols(
 ##   index = col_double(),
 ##   `Job Title` = col_character(),
@@ -679,9 +671,9 @@ list_domain</code></pre>
 ## [29] &quot;$92K-$155K (Glassdoor est.)&quot;  &quot;$105K-$167K (Glassdoor est.)&quot;
 ## 
 ## $Rating
-##  [1]  3.1  4.2  3.8  3.5  2.9  3.9  4.4  3.6  4.5  4.7  3.7  3.4  4.1  3.2  4.3
-## [16]  2.8  5.0  4.8  3.3  2.7  2.2  2.6  4.0  2.5  4.9  2.4 -1.0  2.3  4.6  3.0
-## [31]  2.1  2.0
+##  [1]  3.1  4.2  3.8  3.5  2.9  3.9  4.4  3.6  4.5  4.7  3.7  3.4  4.1  3.2
+## [15]  4.3  2.8  5.0  4.8  3.3  2.7  2.2  2.6  4.0  2.5  4.9  2.4 -1.0  2.3
+## [29]  4.6  3.0  2.1  2.0
 ## 
 ## $`Company Name`
 ##   [1] &quot;Healthfirst\n3.1&quot;                                        
@@ -1348,13 +1340,14 @@ list_domain</code></pre>
 ## [9] &quot;Unknown&quot;                
 ## 
 ## $Founded
-##   [1] 1993 1968 1981 2000 1998 2010 1996 1990 1983 2014 2012 2016 1965 1973 1986
-##  [16] 1997 2015 1945 1988 2017 2011 1967 1860 1992 2003 1951 2005 2019 1925 2008
-##  [31] 1999 1978 1966 1912 1958 2013 1849 1781 1926 2006 1994 1863 1995   -1 1982
-##  [46] 1974 2001 1985 1913 1971 1911 2009 1959 2007 1939 2002 1961 1963 1969 1946
-##  [61] 1957 1953 1948 1850 1851 2004 1976 1918 1954 1947 1955 2018 1937 1917 1935
-##  [76] 1929 1820 1952 1932 1894 1960 1788 1830 1984 1933 1880 1887 1970 1942 1980
-##  [91] 1989 1908 1853 1875 1914 1898 1956 1977 1987 1896 1972 1949 1962
+##   [1] 1993 1968 1981 2000 1998 2010 1996 1990 1983 2014 2012 2016 1965 1973
+##  [15] 1986 1997 2015 1945 1988 2017 2011 1967 1860 1992 2003 1951 2005 2019
+##  [29] 1925 2008 1999 1978 1966 1912 1958 2013 1849 1781 1926 2006 1994 1863
+##  [43] 1995   -1 1982 1974 2001 1985 1913 1971 1911 2009 1959 2007 1939 2002
+##  [57] 1961 1963 1969 1946 1957 1953 1948 1850 1851 2004 1976 1918 1954 1947
+##  [71] 1955 2018 1937 1917 1935 1929 1820 1952 1932 1894 1960 1788 1830 1984
+##  [85] 1933 1880 1887 1970 1942 1980 1989 1908 1853 1875 1914 1898 1956 1977
+##  [99] 1987 1896 1972 1949 1962
 ## 
 ## $`Type of ownership`
 ##  [1] &quot;Nonprofit Organization&quot;         &quot;Company - Public&quot;              
@@ -1426,17 +1419,28 @@ list_domain</code></pre>
 ## [58] &quot;Rail&quot;                                    
 ## 
 ## $Sector
-##  [1] &quot;Insurance&quot;                          &quot;Business Services&quot;                 
-##  [3] &quot;Manufacturing&quot;                      &quot;Information Technology&quot;            
-##  [5] &quot;Biotech &amp; Pharmaceuticals&quot;          &quot;Retail&quot;                            
-##  [7] &quot;Oil, Gas, Energy &amp; Utilities&quot;       &quot;Government&quot;                        
-##  [9] &quot;Health Care&quot;                        &quot;Finance&quot;                           
-## [11] &quot;Aerospace &amp; Defense&quot;                &quot;-1&quot;                                
-## [13] &quot;Transportation &amp; Logistics&quot;         &quot;Media&quot;                             
-## [15] &quot;Telecommunications&quot;                 &quot;Real Estate&quot;                       
-## [17] &quot;Travel &amp; Tourism&quot;                   &quot;Agriculture &amp; Forestry&quot;            
-## [19] &quot;Education&quot;                          &quot;Accounting &amp; Legal&quot;                
-## [21] &quot;Non-Profit&quot;                         &quot;Construction, Repair &amp; Maintenance&quot;
+##  [1] &quot;Insurance&quot;                         
+##  [2] &quot;Business Services&quot;                 
+##  [3] &quot;Manufacturing&quot;                     
+##  [4] &quot;Information Technology&quot;            
+##  [5] &quot;Biotech &amp; Pharmaceuticals&quot;         
+##  [6] &quot;Retail&quot;                            
+##  [7] &quot;Oil, Gas, Energy &amp; Utilities&quot;      
+##  [8] &quot;Government&quot;                        
+##  [9] &quot;Health Care&quot;                       
+## [10] &quot;Finance&quot;                           
+## [11] &quot;Aerospace &amp; Defense&quot;               
+## [12] &quot;-1&quot;                                
+## [13] &quot;Transportation &amp; Logistics&quot;        
+## [14] &quot;Media&quot;                             
+## [15] &quot;Telecommunications&quot;                
+## [16] &quot;Real Estate&quot;                       
+## [17] &quot;Travel &amp; Tourism&quot;                  
+## [18] &quot;Agriculture &amp; Forestry&quot;            
+## [19] &quot;Education&quot;                         
+## [20] &quot;Accounting &amp; Legal&quot;                
+## [21] &quot;Non-Profit&quot;                        
+## [22] &quot;Construction, Repair &amp; Maintenance&quot;
 ## [23] &quot;Consumer Services&quot;                 
 ## 
 ## $Revenue
@@ -1640,7 +1644,7 @@ if(all_k){
 </div>
 <div id="tratamiento-de-la-variable-headquarters-y-location" class="section level2">
 <h2>Tratamiento de la variable <code>Headquarters</code> y <code>Location</code></h2>
-<pre class="r"><code>clea_data &lt;-  clean_data %&gt;% 
+<pre class="r"><code>clean_data &lt;-  clean_data %&gt;% 
   mutate(`Same Location Headquarter`= Location==Headquarters)</code></pre>
 </div>
 <div id="tratamiento-de-la-variable-size" class="section level2">
@@ -1657,8 +1661,8 @@ if(all_k){
            ifelse(is.na(.),`Size Inf`,.) 
          ) </code></pre>
 <pre><code>## Warning: Expected 2 pieces. Missing pieces filled with `NA` in 74 rows [7,
-## 28, 37, 40, 46, 54, 67, 73, 81, 82, 88, 99, 100, 134, 136, 140, 148, 168, 170,
-## 179, ...].</code></pre>
+## 28, 37, 40, 46, 54, 67, 73, 81, 82, 88, 99, 100, 134, 136, 140, 148, 168,
+## 170, 179, ...].</code></pre>
 </div>
 <div id="tratamiento-de-la-variable-revenue" class="section level2">
 <h2>Tratamiento de la variable <code>Revenue</code></h2>
@@ -1759,11 +1763,15 @@ revenue_order &lt;- function(x) {
              Revenue==&quot;$1 to $2 billion (USD)&quot;           ~ &quot;1000000000-2000000000&quot;,
              Revenue==&quot;$2 to $5 billion (USD)&quot;           ~ &quot;2000000000-5000000000&quot;,
              Revenue==&quot;$5 to $10 billion (USD)&quot;          ~ &quot;5000000000-10000000000&quot;,
-             Revenue==&quot;$10+ billion (USD)&quot;               ~ &quot;10000000000-&quot;,
+             Revenue==&quot;$10+ billion (USD)&quot;               ~ &quot;10000000000-Inf&quot;,
          )
          
 ) %&gt;% 
-  separate(Revenue, sep=&quot;-&quot;, into=c(&quot;Revenue Inf&quot;,&quot;Revenue Sup&quot;)) %&gt;% View</code></pre>
+  separate(Revenue, sep=&quot;-&quot;, into=c(&quot;Revenue Inf&quot;,&quot;Revenue Sup&quot;)) %&gt;% 
+  mutate(
+    `Revenue Inf`=as.numeric(`Revenue Inf`),
+    `Revenue Sup`=as.numeric(`Revenue Sup`)
+  )</code></pre>
 </div>
 </div>
 
