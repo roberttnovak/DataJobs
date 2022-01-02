@@ -1,6 +1,6 @@
 ---
 title: "Informe"
-author: "Robert Novak"
+author: "Geovanny Risco y Robert Novak"
 date: "28/12/2021"
 output: html_document
 ---
@@ -50,10 +50,17 @@ cols_raw_data
 ```{r}
 cols_no_interest <- c("index","Job Description") #Eliminamos Job Description de momento por tener demasiada información
 cols_raw_data_filtered <- cols_raw_data[-which(cols_raw_data %in% cols_no_interest)]
-cols_raw_data_filtered
 ```
 
 ## Visualización en forma de lista del dominio de cada variable
+
+```{r}
+cols_raw_data_filtered %>% 
+  map(function(x) unique(raw_data[[x]])) %>% 
+  setNames(cols_raw_data_filtered) -> list_domain
+list_domain
+```
+
 
 # Limpieza de datos
 
@@ -61,31 +68,66 @@ cols_raw_data_filtered
 
 A raíz del estudio hecho en el apartado anterior, hay que tener en cuenta los siguientes puntos para la limpieza de datos:
 
-1. Para la variable `Job Title` es interesante extraer la información del nivel exigido: Junior, Senior, II, etc. 
+1. Se utiliza el `-1` para indicar valores faltantes. Adicionalmente, existen columnas que tienen un valor faltante que se representa de forma distinta a `-1` por la forma en la que se han extraído los datos. En la limpieza tendremos que tener en cuenta también esos casos y representar a todos los valores faltantes de forma homogénea mediante `NA`
 
-1. balblabla
+1. La columna `Job title` tiene una gran diversidad de trabajos con una mínima variación que sería interesante tratarlos como un mismo trabajo. Para ello, habrá que definir un subconjunto de trabajos a partir del cuál tratar como iguales las variantes. Ese subconjunto será los que consideramos principales : \{ data scientist, data engineer, data analyst, machine learning, machine learning expert \}. Así, por ejemplo, un trabajo de e-commerce data analyst o uno de RFP data analyst será tratado bajo la categoría de data analyst
 
+1. La variable `Company name` tiene la información del rating. Habrá que eliminar esa redundancia
 
+1. Es interesante añadir una nueva variable binaria a partir de `Location` y `Headquarters` para ver aquellas ofertas de trabajo en la que la cede central de la empresa está en el mismo sitio que la oferta 
 
+1. Algunas variables como `Salary Estimate`, `Size` y `Revenue` contienen información que pueden ser aprovechadas mejor separándolas en más columnas a partir de las cuáles sacar más información 
+
+## Tratamiento de la variable `Job Titles`
 ```{r}
-cols_raw_data_filtered %>% 
-  map(function(x) unique(raw_data[[x]])) %>% 
-  setNames(cols_raw_data_filtered)
+clean_data <- raw_data
+
+# Asignamos el valor NA en todas las celdas de la tabla donde aparece un -1 o un Unknown
+# Esto lo podemos hacer porque entre las variables numéricas que tenemos no hay ninguna en la que en su dominio tenga valores negativos
+clean_data[clean_data==-1 | clean_data=="Unknown" | clean_data=="Unknown / Non-Applicable"] <- NA
+
+data_jobs_titles <- "data scientist|data engineer|data analyst|machine learning" 
+
+# Tratamos el nombre de los trabajos para considerar idénticos aquellos que tienen mínimas variaciones
+clean_data <- clean_data %>% 
+  mutate(`Job Title`= tolower(`Job Title`) %>% 
+           str_extract(data_jobs_titles)
+         )
 ```
 
+Ahora comprobemos qué tipo de trabajos se han quedado fuera:
 
 ```{r}
-salary_estimate <- raw_data %>% 
+out_jobs_index <- clean_data[is.na(clean_data$`Job Title`),] %>% 
+  select(index) %>% 
+  as_vector() %>% 
+  unname() 
+
+out_jobs <- raw_data %>% 
+  filter(`index` %in% out_jobs_index) %>% 
+  select(`Job Title`) %>% 
+  distinct() %>% 
+  datatable()
+```
+
+Consideramos que los trabajos que se quedan fuera son demasiado específicos para el análisis que queremos hacer posteriormente. Además, el numero de observaciones que perderíamos si no consideraramos el estudio posterior para ninguna de estas profesiones es de `r length(out_jobs_index)` lo que consideramos una cifra asumible. 
+
+```{r}
+clean_data <- clean_data[!is.na(clean_data$`Job Title`),]
+```
+
+## Tratamiento de la variable `Salary Estimate`
+
+Esta variable es interesante separarla en dos: una para el rango mínimo y otra para el rango máximo. Adicionalmente, es interesante crear una nueva a partir de estas dos que sea el rango medio. 
+
+Para ello, como hay muchas observaciones diferentes de rangos distintos nos aseguramos de forma automatizada que todos los rangos están en miles:
+
+
+```{r}
+
+all_k <- raw_data %>% 
   select(`Salary Estimate`) %>% 
-  distinct() 
-
-salary_estimate %>% datatable()
-```
-
-En primer lugar, nos aseguramos de forma automatizada que todos los datos de la columna `Salary Estimate` están en miles: 
-
-```{r}
-all_k <- salary_estimate %>% 
+  distinct() %>% 
   map(function(x) grepl(".*K.*K",x)) %>% 
   as_vector() %>% 
   all()
@@ -95,6 +137,167 @@ if(all_k){
 }else{
   cat("¡Cuidado! Existen algunas observaciones que no están en miles, hay que tratar esas observaciones")
 }
+```
+
+```{r}
+clean_data <- clean_data %>% 
+  separate(`Salary Estimate`,sep="-", into=c("Salary Estimate Inf","Salary Estimate Sup")) %>%
+  mutate(
+    `Salary Estimate Inf` = gsub("K|\\$","",`Salary Estimate Inf`),
+    `Salary Estimate Sup` = gsub("K|\\$","",`Salary Estimate Sup`) 
+  ) %>% 
+  #Lo separamos de nuevo para evitar poner todas las variaciones posibles Glassdoor est., Employer Est. etc
+  separate(`Salary Estimate Sup`, sep="\\(", into=c("Salary Estimate Sup", "drop")) %>% 
+  select(-drop ) %>% 
+  mutate(
+    `Salary Estimate Inf` = as.double(`Salary Estimate Inf`),
+    `Salary Estimate Sup` = as.double(`Salary Estimate Sup`),
+    `Salary Estimate Med` = (`Salary Estimate Inf` + `Salary Estimate Sup`)/2
+  )
+```
+
+## Tratamiento de la variable `Company Name`
+
+```{r}
+clean_data <- clean_data %>% 
+  mutate(`Company Name`=str_remove_all(`Company Name`,"\n.*"))
+```
+
+## Tratamiento de la variable `Headquarters` y `Location`
+
+```{r}
+clea_data <-  clean_data %>% 
+  mutate(`Same Location Headquarter`= Location==Headquarters)
+```
+
+## Tratamiento de la variable `Size`
+
+Esta variable será tratada de forma análoga a `Salary Estimate`.
+
+```{r}
+clean_data <- clean_data %>% 
+  mutate(Size=gsub("employees|\\+","",Size)) %>% 
+  separate(Size,sep="to", into=c("Size Inf","Size Sup")) %>% 
+  mutate(`Size Inf`=as.integer(`Size Inf`),
+         `Size Sup`=as.integer(`Size Sup`),
+         `Size Med`= ((`Size Inf` + `Size Sup`) / 2) %>%
+           # Para aquellas observaciones que no tienen rango superior asumimos el 
+           # ínfimo como medio para no dejarlo com faltante
+           ifelse(is.na(.),`Size Inf`,.) 
+         ) 
+```
+
+## Tratamiento de la variable `Revenue`
+
+Para esta variable, aparte de sacar los valores extremos, sería adecuada tratarla como una variable ordinal
+
+```{r}
+nice_revenue_format <- function(x) {
+  print(x)
+  if(is.na(x)){
+    return(NA_character_)
+  }else if(x=="$100 to $500 million (USD)"){
+    return("100000000-500000000")
+  }else if("$2 to $5 billion (USD)"){ 
+    return("2000000000-5000000000")
+  }else if("$5 to $10 billion (USD)"){ 
+    return("5000000000-10000000000")
+  }else if("$25 to $50 million (USD)"){ 
+    return("25000000-50000000")
+  }else if("$1 to $5 million (USD)"){ 
+    return("1000000-5000000")
+  }else if("Less than $1 million (USD)"){ 
+    return("0-1000000")
+  }else if("$1 to $2 billion (USD)"){ 
+    return("1000000000-2000000000")
+  }else if("$10+ billion (USD)"){ 
+    return("10000000000-")
+  }else if("$500 million to $1 billion (USD)"){ 
+    return("500000000-1000000000")
+  }else if("$10 to $25 million (USD)"){ 
+    return("10000000-25000000")
+  }else if("$50 to $100 million (USD)"){ 
+    return("50000000-100000000")
+  }else if("$5 to $10 million (USD)"){ 
+    return("5000000-10000000")
+  }else{
+    return(NA)
+  }
+}
+
+nice_revenue_format_vec <- function(vector){
+  return(vector %>% 
+    map_chr(function(x) nice_revenue_format(x)))
+}
+
+revenue_order <- function(x) {
+  if(x=="$100 to $500 million (USD)"){
+    return(7)
+  }else if("$2 to $5 billion (USD)"){ 
+    return(10)
+  }else if("$5 to $10 billion (USD)"){ 
+    return(11)
+  }else if("$25 to $50 million (USD)"){ 
+    return(5)
+  }else if("$1 to $5 million (USD)"){ 
+    return(2)
+  }else if("Less than $1 million (USD)"){ 
+    return(1)
+  }else if("$1 to $2 billion (USD)"){ 
+    return(9)
+  }else if("$10+ billion (USD)"){ 
+    return(12)
+  }else if("$500 million to $1 billion (USD)"){ 
+    return(8)
+  }else if("$10 to $25 million (USD)"){ 
+    return(4)
+  }else if("$50 to $100 million (USD)"){ 
+    return(6)
+  }else if("$5 to $10 million (USD)"){ 
+    return(3)
+  }
+  
+}
+```
+
+
+```{r}
+clean_data <- clean_data %>% 
+  mutate(
+    `Revenue Ordered`=
+           case_when(
+             Revenue=="Less than $1 million (USD)"       ~ 1,
+             Revenue=="$1 to $5 million (USD)"           ~ 2,
+             Revenue=="$5 to $10 million (USD)"          ~ 3,
+             Revenue=="$10 to $25 million (USD)"         ~ 4,
+             Revenue=="$25 to $50 million (USD)"         ~ 5,
+             Revenue=="$50 to $100 million (USD)"        ~ 6,
+             Revenue=="$100 to $500 million (USD)"       ~ 7,
+             Revenue=="$500 million to $1 billion (USD)" ~ 8,
+             Revenue=="$1 to $2 billion (USD)"           ~ 9,
+             Revenue=="$2 to $5 billion (USD)"           ~ 10,
+             Revenue=="$5 to $10 billion (USD)"          ~ 11,
+             Revenue=="$10+ billion (USD)"               ~ 12 
+         ),
+    Revenue=
+           case_when(
+             Revenue=="Less than $1 million (USD)"       ~ "0-1000000",
+             Revenue=="$1 to $5 million (USD)"           ~ "1000000-5000000",
+             Revenue=="$5 to $10 million (USD)"          ~ "5000000-10000000",
+             Revenue=="$10 to $25 million (USD)"         ~ "10000000-25000000",
+             Revenue=="$25 to $50 million (USD)"         ~ "25000000-50000000",
+             Revenue=="$50 to $100 million (USD)"        ~ "50000000-100000000", 
+             Revenue=="$100 to $500 million (USD)"       ~ "100000000-500000000",
+             Revenue=="$500 million to $1 billion (USD)" ~ "500000000-1000000000",
+             Revenue=="$1 to $2 billion (USD)"           ~ "1000000000-2000000000",
+             Revenue=="$2 to $5 billion (USD)"           ~ "2000000000-5000000000",
+             Revenue=="$5 to $10 billion (USD)"          ~ "5000000000-10000000000",
+             Revenue=="$10+ billion (USD)"               ~ "10000000000-",
+         )
+         
+) %>% 
+  separate(Revenue, sep="-", into=c("Revenue Inf","Revenue Sup")) %>% View
+  
 ```
 
 
