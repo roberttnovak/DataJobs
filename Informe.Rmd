@@ -76,7 +76,7 @@ A raíz del estudio hecho en el apartado anterior, hay que tener en cuenta los s
 
 1. La variable `Company name` tiene la información del rating. Habrá que eliminar esa redundancia
 
-1. Es interesante añadir una nueva variable binaria a partir de `Location` y `Headquarters` para ver aquellas ofertas de trabajo en la que la cede central de la empresa está en el mismo sitio que la oferta 
+1. Es interesante añadir una nueva variable binaria a partir de `Location` y `Headquarters` para ver aquellas ofertas de trabajo en la que la sede central de la empresa está en el mismo sitio que la oferta 
 
 1. Algunas variables como `Salary Estimate`, `Size` y `Revenue` contienen información que pueden ser aprovechadas mejor separándolas en más columnas a partir de las cuáles sacar más información 
 
@@ -322,6 +322,41 @@ Pasos previos:
 
 - Estudiar Normalidad Salary --> Robert 
 - Outlier --> Geovanny
+
+## Tratamiento de *outliers* de la variable `Salary Estimate Med`
+
+```{r}
+boxplot(clean_data$`Salary Estimate Med`, main="")
+salary_outliers <- unique(boxplot.stats(clean_data$`Salary Estimate Med`)$out)
+salary_outliers
+```
+
+Observamos que, por lo general, la variable `Salary Estimate Med` tiene una distribución de valores bastante consistente, lo cual podemos comprobar dado el pequeño tamaño de su rango intercuartílico (caja). No obstante, vemos como existen puntos fuera de este rango y de los *whiskers*, los conocidos como *outliers*. En concreto, son dos puntos: 43.5 y 271.5. A continuación, estudiaremos a que registros corresponden a estos valores.  
+
+```{r}
+clean_data %>% 
+  filter(
+    `Salary Estimate Med` == 43.5
+  ) %>% View
+```
+
+En este caso, observamos como este salario atípicamente bajo corresponde con posiciones en las que no se piden experiencia (lo podemos comprobar por la variable `Job Description`) y además, se encuentran en ciudades de Estados Unidos poco punteras (tecnologicamente hablando), como por ejemplo "Lincoln", "Arlington", "Saint Paul", etc.. Por tanto, podemos concluir que estas variables no se tratan de errores en el dataset, sino de valores totalmente legítimos que debemos tener en cuenta para las pruebas estadísticas posteriores. 
+
+```{r}
+clean_data %>% 
+  filter(
+    `Salary Estimate Med` == 271.5
+  ) %>% View
+```
+
+En este caso podemos observar lo contrario, un valor que se diferencia del resto por ser demasiado alto. Al igual que antes, hemos analizado cada uno de estos registros con el objetivo de observar que es lo que les diferencia del resto. En una primera instancia pensabamos que se tratarían de posiciones para managers y seniors, pero la realidad es que hemos encontrado diferentes motivos por los cuales se pueden dar estos valores:
+
+  * Posiciones para managers, seniors o PhDs.
+  * Ciudad muy punteras en el ambito tecnológico. Ex. "Seattle", "New York", "Washington", etc.
+  * Empresas muy top. Ex. "Roche", "Aztrazeneca", "Maxar Technologies", etc.
+
+Dado que estos salarios tan altos son totalmente justificables (por las razones planteadas, entre otros), mantendremos entre registros para las pruebas estadísticas posteriores. 
+
 
 Preguntas: 
 
