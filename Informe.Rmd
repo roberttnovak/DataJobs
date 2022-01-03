@@ -355,14 +355,50 @@ En este caso podemos observar lo contrario, un valor que se diferencia del resto
   * Ciudad muy punteras en el ambito tecnológico. Ex. "Seattle", "New York", "Washington", etc.
   * Empresas muy top. Ex. "Roche", "Aztrazeneca", "Maxar Technologies", etc.
 
-Dado que estos salarios tan altos son totalmente justificables (por las razones planteadas, entre otros), mantendremos entre registros para las pruebas estadísticas posteriores. 
+Dado que estos salarios tan altos son totalmente justificables (por las razones planteadas, entre otras), mantendremos entre registros para las pruebas estadísticas posteriores. 
 
 
 Preguntas: 
 
 1- Relación ente el trabajo y el salario . chisquared --> Robert 
-1- Relación entre sede central=localización y salary --> Geovanny 
-1- Comparación entre type of ownerships y salarios --> Robert  
-1- Relación entre industry y salario --> Geovanny
-1- Revenue y salary --> Geovanny
-1- Size (máx) y salary --> Robert 
+2- Relación entre sede `Same Location Headquarter` y `Salary Estimate Med` --> Geovanny 
+
+Nos gustaría conocer si existe alguna relación entre el salario estimado medio y el lugar de la sede frente a la localización del trabajo (la variable `Same Location Headquarter` es `TRUE` si la localización de la sede es igual a la de la posición que se ofrece). Para ello, realizaremos una regresión logística:
+
+```{r}
+summary(glm(`Same Location Headquarter`~`Salary Estimate Med`,family=binomial(link=logit), data=clean_data))
+```
+
+Observamos que la relación lineal que obtenemos entre estas dos variables es indirectamente proporcional, en concreto, de -0.0028. Una correlación muy baja, pero es que además, es una correlación no significativa (*p-value* de 0.217, para un intervalo de confianza del 95%), por tanto, podemos afirmar que la variable `Same Location Headquarter` no nos aporta practicamente suficiente información y podríamos prescindir de ella. 
+
+3- Comparación entre type of ownerships y salarios --> Robert  
+4- Relación entre industry y salario --> Geovanny
+
+Antes de calcular la posible relación entre estas dos variables, sería interesante poder ver de forma gráfica las diferencias entre los salarios para cada una de las industrias disponibles en el dataset. Dado que existen más de 50 valores diferentes para la variable de `Industry`, procederemos a representar al menos las 7 primeras industrias con más concurrencia en el dataset. 
+
+```{r}
+#sort(table(clean_data$Industry),descending=T)
+length(unique(clean_data$Industry))
+clean_data %>%
+  filter(!is.na(Industry)) %>%
+  count(Industry, sort=T) %>%
+  head(7)
+
+clean_data %>%
+  filter(!is.na(Industry)) %>%
+  add_count(Industry) %>%
+  arrange(desc(n)) %>% # igual a add_count(Industry,sort=T)
+  slice_max(n, prop=0.5) %>%
+  ggplot(aes(x=Industry, y=`Salary Estimate Med`)) + geom_bar(stat="summary", fun="mean", fill="steelblue")+coord_flip()
+```
+
+A simple vista no observamos diferencias considerables entre los salarios medios para cada una de las industrias mostradas en el gráfico. Vemos como casi todas ofrecen salarios cercanos a los 125.000\$. La industria aeroespacial es la que mejor pagada, superando los 150.000\$ anuales.
+
+
+```{r}
+summary(lm(`Salary Estimate Med`~Industry, data=clean_data))
+```
+
+5- Revenue y salary --> Geovanny
+
+6- Size (máx) y salary --> Robert 
