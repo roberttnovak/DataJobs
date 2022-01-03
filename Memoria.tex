@@ -1,0 +1,264 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Untitled},
+  pdfauthor={Geovanny Risco y Robert Novak},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{Untitled}
+\author{Geovanny Risco y Robert Novak}
+\date{3/1/2022}
+
+\begin{document}
+\maketitle
+
+\begin{verbatim}
+##  [1] "index"             "Job Title"         "Salary Estimate"  
+##  [4] "Job Description"   "Rating"            "Company Name"     
+##  [7] "Location"          "Headquarters"      "Size"             
+## [10] "Founded"           "Type of ownership" "Industry"         
+## [13] "Sector"            "Revenue"           "Competitors"
+\end{verbatim}
+
+\hypertarget{descripciuxf3n-del-dataset}{%
+\section{Descripción del Dataset}\label{descripciuxf3n-del-dataset}}
+
+El dataset que hemos escogido está recogido mediante webscraping en
+distintas plataformas sobre ofertas de empleo relacionadas con los datos
+en Estados Unidos. Hemos escogido este dataset principalmente por dos
+razones.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Es un dataset bastante desordenado en el que da lugar a hacer procesos
+  de limpieza de distinto tipo ideal para asentar los conceptos tratados
+  en la asignatura
+\item
+  Nos parece interesante conocer el mercado laboral de las distintas
+  profesiones a las que podríamos aspirar tras la finalización del
+  máster y la demanda, aunque sea en un país extranjero.
+\end{enumerate}
+
+Nuestro principal objetivo con el dataset es contestar a distintas
+preguntas relacionadas con el salario y distintas variables que se
+proporcionan en el dataset:
+
+Aquí concretar un poco algunas de ellas
+
+\hypertarget{integraciuxf3n-y-selecciuxf3n-de-los-datos-de-interuxe9s-a-analizar}{%
+\section{Integración y selección de los datos de interés a
+analizar}\label{integraciuxf3n-y-selecciuxf3n-de-los-datos-de-interuxe9s-a-analizar}}
+
+\hypertarget{limpieza-de-datos}{%
+\section{Limpieza de datos}\label{limpieza-de-datos}}
+
+\hypertarget{tratamiento-de-las-distintas-variables-del-dataset}{%
+\subsection{Tratamiento de las distintas variables del
+dataset}\label{tratamiento-de-las-distintas-variables-del-dataset}}
+
+En primer lugar, hemos realizado un análisis del dominio de las
+variables a partir de las cuáles hemos hecho hecho las siguientes
+observaciones:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Se utiliza el \texttt{-1} para indicar valores faltantes.
+  Adicionalmente, existen columnas que tienen un valor faltante que se
+  representa de forma distinta a \texttt{-1} por la forma en la que se
+  han extraído los datos. En la limpieza hemos tratado todos esos casos
+  y representado los valores faltantes de forma homogénea mediante
+  \texttt{NA}, que es la forma de representar los valores faltantes en R
+  y gracias al cuál podemos hacer operaciones para algunas de las
+  funciones donde se tienen en cuenta los valores faltantes.
+\item
+  La columna \texttt{Job\ title} tiene una gran diversidad de trabajos
+  con una mínima variación en la que es interesante tratarlos como un
+  mismo trabajo. Para ello, hemos definido un subconjunto de trabajos a
+  partir del cuál tratar como iguales las variantes. Ese subconjunto son
+  los que consideramos principales : \{ data scientist, data engineer,
+  data analyst, machine learning\}. Así, por ejemplo, un trabajo de
+  e-commerce data analyst o uno de RFP data analyst será tratado bajo la
+  categoría de data analyst. Aquellos trabajos muy específicos en los
+  cuáles no se engloba bajo ninguna de las categorías anteriores los
+  consideramos muy específicos y, al no ser un número muy elevado hemos
+  decidido eliminarlos del dataset.
+\item
+  La variable \texttt{Company\ name} tiene la información del rating.
+  Hemos eliminado esa redundancia
+\item
+  Hemos añadido una nueva variable binaria a partir de \texttt{Location}
+  y \texttt{Headquarters} para ver aquellas ofertas de trabajo en la que
+  la cede central de la empresa está en el mismo sitio que la oferta
+\item
+  Algunas variables como \texttt{Salary\ Estimate}, \texttt{Size} y
+  \texttt{Revenue} contienen información que pueden ser aprovechadas
+  mejor separándolas en más columnas a partir de las cuáles sacar más
+  información. Así, las hemos separado en más columnas. Una para los
+  rangos mínimos, otro para los rangos máximos y otra para los medios.
+\item
+  \texttt{Salary\ Estimate} puede ser considerada una variable
+  cuantitativa ya que, aunque se proporcione un rango variable para
+  todas las ofertas, la realidad es que el salario no es un rango sino
+  un valor concreto dado por un dominio continuo. La decisión que hemos
+  tomado para solucionar esto es considerar el punto medio del rango
+  proporcionado como el salario de la oferta. Esta solución es una
+  aproximación ya que dos ofertas con mismos rangos tendrían el mismo
+  salario y no tendría por qué ser considerados como el mismo. O,
+  incluso, dos salarios con rangos distintos pero con una cierta
+  intersección podrían tener en la realidad el mismo salario pero no tal
+  como lo hemos tratado. Sin embargo, aunque lo ideal sería hacer un
+  estudio externo sobre la distribución del salario dado el rango, la
+  empresa particular, etc. Al no disponer de esa información asumimos
+  esta simplificación.
+\item
+  \texttt{Size} y \texttt{Revenue} deben ser consideradas para análisis
+  posteriores como variables ordinales ya que su dominio corresponde a
+  categorías no solapadas en el que el orden importa.
+\item
+  La variable \texttt{Job\ Description} es una variable muy interesante
+  a partir de la cuál se puede obtener información interesante como, por
+  ejemplo, los lenguajes de programación exigidos por la oferta, los
+  años de experiencia necesario, etc. Sin embargo, esta información está
+  presente de forma muy variable de observación en observación lo que
+  hace difícil su extracción para los conocimientos que tenemos
+  actualmente (aún no hemos tenido ninguna asignatura de NLP). Por ello,
+  hemos decidido no tratarla más que para comprobar casos atípicos por
+  si hay alguna información interesante que pudiera explicarlos
+\end{enumerate}
+
+\hypertarget{tratamiento-de-los-valores-extremos-de-la-variable-de-interuxe9s-salary-estimate-med}{%
+\subsection{\texorpdfstring{Tratamiento de los valores extremos de la
+variable de interés
+\texttt{Salary\ Estimate\ Med}}{Tratamiento de los valores extremos de la variable de interés Salary Estimate Med}}\label{tratamiento-de-los-valores-extremos-de-la-variable-de-interuxe9s-salary-estimate-med}}
+
+\includegraphics{Memoria_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+En el análisis ue hemos realizado, hemos observado que la variable
+\texttt{Salary\ Estimate\ Med} tiene una distribución de valores
+bastante consistente, lo cual podemos comprobar dado el pequeño tamaño
+de su rango intercuartílico (caja). No obstante, vemos como existen
+puntos fuera de este rango y de los \emph{whiskers}, los conocidos como
+\emph{outliers}. En concreto, son dos puntos: 43.5 y 271.5.
+
+Explorando los casos en el que el salario es atípicamente bajo hemos
+encontrado que se corresponde con posiciones en las que no se piden
+experiencia (lo podemos comprobar por la variable
+\texttt{Job\ Description}) y, además, se encuentran en ciudades de
+Estados Unidos poco punteras (tecnologicamente hablando), como por
+ejemplo ``Lincoln'', ``Arlington'', ``Saint Paul'', etc. Por tanto,
+podemos concluir que estas variables no se tratan de errores en el
+dataset, sino de valores totalmente legítimos que debemos tener en
+cuenta para las pruebas estadísticas posteriores.
+
+En el caso del valor atípico alto podemos observar lo contrario, estas
+observaciones están asociadas a:
+
+\begin{itemize}
+\tightlist
+\item
+  Posiciones para managers, seniors o PhDs. Es decir, se requiere
+  formación y experiencia para optar a este sueldo
+\item
+  Ciudad muy punteras en el ambito tecnológico. Ex. ``Seattle'', ``New
+  York'', ``Washington'', etc.
+\item
+  Empresas muy top. Ex. ``Roche'', ``Aztrazeneca'', ``Maxar
+  Technologies'', etc.
+\end{itemize}
+
+Dado que estos salarios tan altos son totalmente justificables (por las
+razones planteadas, entre otras), hemos mantenido los registros para las
+pruebas estadísticas posteriores.
+
+\hypertarget{anuxe1lisis-de-datos}{%
+\section{Análisis de datos}\label{anuxe1lisis-de-datos}}
+
+\hypertarget{comprobaciuxf3n-de-normalidad-de-la-variable-salary-estimate-med}{%
+\subsection{\texorpdfstring{Comprobación de normalidad de la variable
+\texttt{Salary\ Estimate\ Med}}{Comprobación de normalidad de la variable Salary Estimate Med}}\label{comprobaciuxf3n-de-normalidad-de-la-variable-salary-estimate-med}}
+
+La variable \texttt{Salary\ Estimate\ Med} representa la variable
+cuantitativa de interés según lo explicado en el apartado de limpieza de
+datos.
+
+A continuación proporcionamos dos gráficas para comprobar visualmente,
+previo al test de normalidad, si la variable tiene apariencia de ser
+normal.
+
+En vista de los gráficos se puede apreciar que no parece que la
+distribución del salario sea normal. Comprobemoslo de manera formal
+usando el test de shapiro
+
+El p valor es muy bajo por lo que se puede rechazar la hipótesis nula de
+que la variable sigue una distribución normal. Hay que tener en cuenta
+este hecho para los análisis relacionados que presu
+
+\hypertarget{anuxe1lisis-de-la-normalidad-de-la-variable-salary}{%
+\subsection{Análisis de la normalidad de la variable
+salary}\label{anuxe1lisis-de-la-normalidad-de-la-variable-salary}}
+
+\hypertarget{representaciuxf3n-de-los-resultados-a-partir-de-tablas-y-gruxe1ficas}{%
+\section{Representación de los resultados a partir de tablas y
+gráficas}\label{representaciuxf3n-de-los-resultados-a-partir-de-tablas-y-gruxe1ficas}}
+
+\hypertarget{cuxf3digo}{%
+\section{Código}\label{cuxf3digo}}
+
+\end{document}
