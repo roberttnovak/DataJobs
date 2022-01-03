@@ -2,7 +2,9 @@
 title: "Informe"
 author: "Geovanny Risco y Robert Novak"
 date: "28/12/2021"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 <!-- Para después de ejecutar el knitr ponerlo en la consola para cargar las variables rmarkdown::render("Informe.Rmd") -->
