@@ -94,6 +94,8 @@ A raíz del estudio hecho en el apartado anterior, hay que tener en cuenta los s
 
 1. `Size` y `Revenue` deben ser consideradas para análisis posteriores como variables ordinales ya que su dominio corresponde a categorías no solapadas en el que el orden importa. 
 
+
+
 ## Tratamiento de la variable `Job Titles`
 ```{r}
 clean_data <- raw_data
@@ -288,6 +290,19 @@ clean_data %>%
   )
 ```
 
+## Integración 
+
+
+
+```{r}
+clean_data <- clean_data %>% 
+  select(-c("index"
+,"Competitors"
+,"Founded"
+,"Company Name"
+,"Type of ownership")) %>% View
+```
+
 
 # Análisis 
 
@@ -353,6 +368,13 @@ clean_data %>%
 ```
 
 ```{r}
+levene_job <- leveneTest(`Salary Estimate Med` ~ `Job Title` , data=clean_data )$`Pr(>F)`[1]
+levene_size <- leveneTest(`Salary Estimate Med` ~ as.factor(`Size Ordered`) , data=clean_data )$`Pr(>F)`[1]
+levene_revenue <- leveneTest(`Salary Estimate Med` ~ as.factor(`Revenue Ordered`) , data=clean_data )$`Pr(>F)`[1]
+levene_industry <- leveneTest(`Salary Estimate Med` ~ `Industry` , data=clean_data )$`Pr(>F)`[1]
+```
+
+```{r}
 kruskal.test(`Salary Estimate Med` ~ `Job Title`, data = clean_data)
 ```
 
@@ -362,6 +384,10 @@ kruskal.test(`Salary Estimate Med` ~ `Size Ordered`, data = clean_data)
 
 ```{r}
 kruskal.test(`Salary Estimate Med` ~ `Revenue Ordered`, data = clean_data)
+```
+
+```{r}
+kruskal.test(`Salary Estimate Med` ~ Industry, data = clean_data)
 ```
 
 
@@ -380,7 +406,6 @@ clean_data %>%
   slice_max(n, prop=0.5) %>%
   ggplot(aes(x=Industry, y=`Salary Estimate Med`)) + geom_bar(stat="summary", fun="mean", fill="steelblue")+coord_flip()+theme_bw()
 
-kruskal.test(`Salary Estimate Med` ~ Industry, data = clean_data)
 ```
 
 
@@ -402,4 +427,9 @@ cor(clean_data$Rating, clean_data$`Salary Estimate Med`, use="complete.obs")
 summary(glm(`Same Location Headquarter`~`Salary Estimate Med`,family=binomial(link=logit), data=clean_data))
 ```
 
+```{r}
+clean_data %>% 
+  lm(`Salary Estimate Med` ~ `Job Title` + as.factor(`Size Ordered`)+ as.factor(`Revenue Ordered`) + `Industry` , data=.) %>% 
+  summary()
+```
 
