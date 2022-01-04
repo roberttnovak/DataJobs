@@ -7,7 +7,8 @@ El proyecto se ha realizado de manera conjunta entre [Geovanny Risco](https://gi
 
 ## Estructura del repositorio
 
-\#TODO
+* Data_Jobs_Cleaning.\*: archivo en el cual se encuentra todo el código utilizado para los distintos análisis
+* Memoria.\*: resolución de las preguntas de la práctica
 
 ## Recursos
 * Dataset: [data-science-job-posting-on-glassdoor](https://www.kaggle.com/rashikrahmanpritom/data-science-job-posting-on-glassdoor?select=Uncleaned_DS_jobs.csv)
