@@ -2,24 +2,17 @@
 title: "PRA2 - Tipologia y Ciclo de Vida de los Datos"
 author: "Geovanny Risco y Robert Novak"
 date: "3/1/2022"
-output:
-  pdf_document:
-    toc: yes
-    toc_depth: 3
-  html_document:
-    df_print: paged
-    number_sections: yes
-    toc: yes
-    toc_depth: 3
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=F, fig.align = 'center')
+knitr::opts_chunk$set(echo=F, fig.align = 'center', warning=F)
 ```
 
-```{r, echo=FALSE, message=F}
+```{r, echo=FALSE, message=F, warning=F}
 library(tidyverse)
 library(readr)
+library(car)
 raw_data <- read_csv("Data/Raw/uncleaned_data.csv")
 cols_raw_data <- names(raw_data)
 cols_no_interest <- c("index","Job Description") #Eliminamos Job Description de momento por tener demasiada información
@@ -257,11 +250,14 @@ En vista de los gráficos se puede apreciar que no parece que la distribución d
 
 ## Pruebas estadísticas
 
-### Análisis entre las variables categóricas y la variable cuantitativa `Salary Estimate Med`
+### Análisis entre las variables categóricas `Job Title`, `Size Ordered`, `Revenue Ordered`, `Industry` y la variable cuantitativa `Salary Estimate Med`
 
 A continuación, vamos a comprobar las diferencias entre los distintos grupos existentes en el dataset. 
 
-La cuestión principal es **¿Existen diferencias salariales significativas entre los distintos trabajos que hemos definido?** Si representamos esto gráficamente, se puede apreciar que los salarios se distribuyen de forma bastante uniforme:
+La cuestión principal es **¿Existen diferencias salariales significativas entre los distintos trabajos que hemos definido?** 
+
+
+Si representamos esto gráficamente, se puede apreciar que los salarios se distribuyen de forma bastante uniforme:
 
 ```{r, echo=F}
 clean_data %>% 
@@ -271,6 +267,7 @@ clean_data %>%
   theme_classic() +
   geom_boxplot()
 ```
+
 
 De la misma manera, sería interesante observar las diferencias entre los salarios para cada una de las industrias disponibles en el dataset. Dado que existen más de 50 valores diferentes para la variable de `Industry`, procederemos a representar al menos las 7 primeras industrias con más concurrencia en el dataset. 
 
@@ -290,7 +287,26 @@ A simple vista no observamos diferencias considerables entre los salarios medios
 
 
 
-```{r, echo=F}
+```{r}
+levene_job <- leveneTest(`Salary Estimate Med` ~ `Job Title` , data=clean_data )$`Pr(>F)`[1]
+levene_size <- leveneTest(`Salary Estimate Med` ~ as.factor(`Size Ordered`) , data=clean_data )$`Pr(>F)`[1]
+levene_revenue <- leveneTest(`Salary Estimate Med` ~ as.factor(`Revenue Ordered`) , data=clean_data )$`Pr(>F)`[1]
+levene_industry <- leveneTest(`Salary Estimate Med` ~ `Industry` , data=clean_data )$`Pr(>F)`[1]
+```
+Vamos a comprobar lo visto anteriormente de manera formal. Para ello, hemos comrpobado, en primer lugar, la homocedasticidad mediante el test de levene para todas las variables de interés. Los resultados han sido `r levene_job`,  `r levene_size`, `r levene_revenue` y `r levene_industry` para `Job Title`, `Size Ordered`, `Revenue Ordered`, `Industry` respectivamente. Es decir, en todos los casos no podemos rechazar la hipótesis nula de que las varianzas poblacionales son iguales. Por tanto, podemos aplicar el test de Kruskal en el cual no hace falta que las distribuciones provengan de la normal pero sí asume la homocedasticidad. 
+
+```{r, echo = F, warning=F}
+tabla_resumen <- tibble(
+  "Job Title" = levene_job,
+  "Size"      = levene_size,
+  "Revenue"   = levene_revenue, 
+  "Industry"  = levene_industry
+)
+tabla_resumen %>% knitr::kable()
+```
+
+
+```{r, echo=F, warning=F}
 kruskal_job <- kruskal.test(`Salary Estimate Med` ~ `Job Title`, data = clean_data)$p.value
 kruskal_size <- kruskal.test(`Salary Estimate Med` ~ `Size Ordered`, data = clean_data)$p.value
 kruskal_revenue <- kruskal.test(`Salary Estimate Med` ~ `Revenue Ordered`, data = clean_data)$p.value
@@ -298,13 +314,9 @@ kruskal_industry <- kruskal.test(`Salary Estimate Med` ~ Industry, data = clean_
 ```
 
 
-Mediante el test de kruskal, un test no paramétrico cuya hipótesis inicial es que todas las muestras provienen de la misma distribución hemos comprobado formalmente que esto efectivamente es así, pues el p valor es `r kruskal_job`. Es decir, un p valor demasiado alto como para poder rechazar la hipótesis nula. Dicho de otro modo, no podemos descartar que los salarios dados por los distintos puestos provengan de una misma distribución y , por tanto, haya diferencias significativa entre ellas. 
+El test de Kruskal es un test no paramétrico cuya hipótesis inicial es que todas las muestras provienen de la misma distribución. Mediante él, hemos comprobado formalmente que esto efectivamente es así, pues los p valores son los mostrados en la tabla resumen de a continuación: 
 
-Ocurre lo mismo para las otras dos variables ordinales que hacen referencia al tamaño de la empresa y al revenue. Pues, en ambos casos al replicar el test los p valores son `r kruskal_size` y `r kruskal_revenue` respectivamente, Así como de la variable categórica que representa la industria con un p-valor de `r kruskal_industry`
-
-A continuación se puede ver una tabla resumen con los resultados obtenidos
-
-```{r echo=F}
+```{r echo=F, warning=F}
 tabla_resumen <- tibble(
   "Job Title"= kruskal_job,
   "Size"= kruskal_size,
@@ -318,7 +330,7 @@ tabla_resumen %>% knitr::kable()
 ### Análisis de correlación entre `Rating` y `Salary Estimate Med`
 
 ```{r echo=F}
-corr <- cor(clean_data$Rating, clean_data$`Salary Estimate Med`, use="complete.obs")
+corr <- cor(clean_data$Rating, clean_data$`Salary Estimate Med`, method="spearman", use="complete.obs")
 ```
 
 Otra cuestión de interés es si a partir del rating se puede predecir el salario. Para ver si la calidad de la oferta está relacionada con el salario o quizás intervengan más factores. La relación entre las dos variables se puede ver en el siguiente gráfico:  
@@ -330,7 +342,7 @@ clean_data %>%
 ```
 
 
-La correlación que nos ha salido entre estas dos variables es de `r corr`. Es decir, no parece que estén correlacionadas. 
+La correlación de Spearman que nos ha salido entre estas dos variables es de `r corr`. Es decir, no parece que estén correlacionadas. 
 
 
 \#**TODO**: regresión
