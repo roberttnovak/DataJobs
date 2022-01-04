@@ -302,6 +302,9 @@ clean_data <- clean_data %>%
 ,"Founded"
 ,"Company Name"
 ,"Type of ownership"))
+
+clean_data %>% 
+  write_csv("Data/Clean/clean_data.csv")
 ```
 
 
