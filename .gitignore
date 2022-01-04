@@ -4,4 +4,5 @@
 .Ruserdata
 .log
 .tex
-Informe_*/
+*_cache/
+*_files/

@@ -2,7 +2,15 @@
 title: "PRA2 - Tipologia y Ciclo de Vida de los Datos"
 author: "Geovanny Risco y Robert Novak"
 date: "3/1/2022"
-output: html_document
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    df_print: paged
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
 ---
 
 ```{r setup, include=FALSE}

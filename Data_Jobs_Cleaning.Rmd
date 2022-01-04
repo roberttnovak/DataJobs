@@ -1,5 +1,5 @@
 ---
-title: "Informe"
+title: "Data Jobs Cleaning"
 author: "Geovanny Risco y Robert Novak"
 date: "28/12/2021"
 output:
@@ -29,6 +29,7 @@ library(pander) #Para mostrar los vectores más estéticamente
 library(DT)
 library(readr)
 library(missForest)
+library(car)
 ```
 
 # Importación del dataset
@@ -300,7 +301,7 @@ clean_data <- clean_data %>%
 ,"Competitors"
 ,"Founded"
 ,"Company Name"
-,"Type of ownership")) %>% View
+,"Type of ownership"))
 ```
 
 
