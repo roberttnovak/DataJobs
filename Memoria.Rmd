@@ -3,14 +3,14 @@ title: "PRA2 - Tipologia y Ciclo de Vida de los Datos"
 author: "Geovanny Risco y Robert Novak"
 date: "3/1/2022"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
   html_document:
     df_print: paged
     number_sections: yes
     toc: yes
     toc_depth: 3
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
 ---
 
 ```{r setup, include=FALSE}
@@ -297,7 +297,7 @@ levene_size <- leveneTest(`Salary Estimate Med` ~ as.factor(`Size Ordered`) , da
 levene_revenue <- leveneTest(`Salary Estimate Med` ~ as.factor(`Revenue Ordered`) , data=clean_data )$`Pr(>F)`[1]
 levene_industry <- leveneTest(`Salary Estimate Med` ~ `Industry` , data=clean_data )$`Pr(>F)`[1]
 ```
-Vamos a comprobar lo visto anteriormente de manera formal. Para ello, hemos comrpobado, en primer lugar, la homocedasticidad mediante el test de levene para todas las variables de interés. Los resultados han sido `r levene_job`,  `r levene_size`, `r levene_revenue` y `r levene_industry` para `Job Title`, `Size Ordered`, `Revenue Ordered`, `Industry` respectivamente. Es decir, en todos los casos no podemos rechazar la hipótesis nula de que las varianzas poblacionales son iguales. Por tanto, podemos aplicar el test de Kruskal en el cual no hace falta que las distribuciones provengan de la normal pero sí asume la homocedasticidad. 
+Vamos a comprobar lo visto anteriormente de manera formal. Para ello, hemos comprobado, en primer lugar, la homocedasticidad mediante el test de levene para todas las variables de interés. Los resultados han sido `r levene_job`,  `r levene_size`, `r levene_revenue` y `r levene_industry` para `Job Title`, `Size Ordered`, `Revenue Ordered`, `Industry` respectivamente. Es decir, en todos los casos no podemos rechazar la hipótesis nula de que las varianzas poblacionales son iguales. Por tanto, podemos aplicar el test de Kruskal en el cual no hace falta que las distribuciones provengan de la normal pero sí asume la homocedasticidad. 
 
 ```{r, echo = F, warning=F}
 tabla_resumen <- tibble(
@@ -349,7 +349,7 @@ clean_data %>%
 La correlación de Spearman que nos ha salido entre estas dos variables es de `r corr`. Es decir, no parece que estén correlacionadas. 
 
 
-
+### Regresión lineal múltiple
 
 
 Por último, hemos hecho una regresión lineal múltiple con las variables que hemos estudiado, aunque por los análisis previos ya sospechábamos que este modelo no podría explicar la varianza de los datos. Efectivamente, esto se puede ver en el siguiente summary 
