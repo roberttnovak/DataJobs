@@ -3,15 +3,22 @@ title: "Informe"
 author: "Geovanny Risco y Robert Novak"
 date: "28/12/2021"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
   html_document:
     df_print: paged
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
 ---
 
 <!-- Para después de ejecutar el knitr ponerlo en la consola para cargar las variables rmarkdown::render("Informe.Rmd") -->
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=T, message=F, warning=F)
 ```
+\newpage
 
 # Importación de librerías 
 
@@ -220,8 +227,6 @@ clean_data <- clean_data %>%
 
 Para esta variable, aparte de sacar los valores extremos, sería adecuada tratarla como una variable ordinal
 
-
-
 ```{r}
 clean_data <- clean_data %>% 
   mutate(
@@ -265,9 +270,28 @@ clean_data <- clean_data %>%
   
 ```
 
+## Tratamiento de *outliers* de la variable `Salary Estimate Med`
+
+```{r}
+boxplot(clean_data$`Salary Estimate Med`, main="Salario estimado promedio", col="blue")
+salary_outliers <- unique(boxplot.stats(clean_data$`Salary Estimate Med`)$out)
+salary_outliers
+
+clean_data %>% 
+  filter(
+    `Salary Estimate Med` == 43.5
+  )
+
+clean_data %>% 
+  filter(
+    `Salary Estimate Med` == 271.5
+  )
+```
+
+
 # Análisis 
 
-# Estudio de la normalidad
+## Estudio de la normalidad de variable `Salary Estimate Med`
 
 ```{r}
 n_bins=clean_data %>% 
@@ -315,6 +339,10 @@ clean_data %>%
 shapiro.test(clean_data$Rating)
 ```
 
+## Estudio de relación entre `Estimate Salary Med` y otras variables
+
+### Categóricas: `Job Title`, `Size Ordered`, `Revenue Ordered` y `Industry`
+
 ```{r}
 clean_data %>% 
   ggplot(aes(y=`Salary Estimate Med`, fill=`Job Title`)) +
@@ -333,9 +361,30 @@ kruskal.test(`Salary Estimate Med` ~ `Size Ordered`, data = clean_data)
 ```
 
 ```{r}
-
+kruskal.test(`Salary Estimate Med` ~ `Revenue Ordered`, data = clean_data)
 ```
 
+
+```{r}
+# Estudio de las diferentes industrias en el dataset y sus concurrencias
+sort(table(clean_data$Industry),descending=T)
+length(unique(clean_data$Industry))
+clean_data %>%
+  filter(!is.na(Industry)) %>%
+  count(Industry, sort=T) 
+  
+clean_data %>%
+  filter(!is.na(Industry)) %>%
+  add_count(Industry) %>%
+  arrange(desc(n)) %>% # igual a add_count(Industry,sort=T)
+  slice_max(n, prop=0.5) %>%
+  ggplot(aes(x=Industry, y=`Salary Estimate Med`)) + geom_bar(stat="summary", fun="mean", fill="steelblue")+coord_flip()+theme_bw()
+
+kruskal.test(`Salary Estimate Med` ~ Industry, data = clean_data)
+```
+
+
+### Continuas: `Rating`
 
 ```{r}
 clean_data %>% 
@@ -347,29 +396,10 @@ clean_data %>%
 cor(clean_data$Rating, clean_data$`Salary Estimate Med`, use="complete.obs")
 ```
 
+### Binarias: `Same Location Headquarter`
+
+```{r}
+summary(glm(`Same Location Headquarter`~`Salary Estimate Med`,family=binomial(link=logit), data=clean_data))
+```
 
 
-Más columnas a tener en cuenta para NAs
-
--Salary Med 
--Size
-
-Subselección de las variabels de interés (No): 
--Rating 
--index
--competitors
--founded
-
-Pasos previos: 
-
-- Estudiar Normalidad Salary --> Robert 
-- Outlier --> Geovanny
-
-Preguntas: 
-
-1- Relación ente el trabajo y el salario --> Robert 
-1- Relación entre sede central=localización y salary --> Geovanny 
-1- Comparación entre type of ownerships y salarios --> Robert  
-1- Relación entre industry y salario --> Geovanny
-1- Revenue y salary --> Geovanny
-1- Size (máx) y salary --> Robert 
